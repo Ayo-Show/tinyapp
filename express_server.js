@@ -66,6 +66,21 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 
+// when the edit buton on the show URL page is pressed
+app.put("/urls/:shortURL/edit", (req, res) => {
+  const userID = req.session.user_id
+  const shortURL = req.params.shortURL;
+  let usersObj = isUsersLink(urlDatabase, userID);
+  //check if shortURL exists for current user:
+  if (usersObj[shortURL]) {
+    urlDatabase[shortURL].longURL = req.body.longURL;
+    res.redirect("/urls");
+  } else {
+    res.render("error", {ErrorStatus: 403, ErrorMessage: "You do not have access to edit this link."});
+  }
+});
+
+
 
 function generateRandomString() {
 
