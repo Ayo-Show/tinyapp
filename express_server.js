@@ -53,6 +53,20 @@ app.get("/set", (req, res) => {
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
+// when the delete button on the urls page is pressed
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const { shortURL } = req.params;
+  const userID = req.session.user_id;
+  if (userID) {
+    delete urlDatabase[shortURL];
+  } else {
+    res.send("Unauthorized request");
+  }
+  res.redirect("/urls");
+});
+
+
+
 function generateRandomString() {
 
 };
