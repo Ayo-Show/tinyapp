@@ -8,6 +8,30 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+
+        <!--Register/ Login/ Logout-->
+        <div class="form-inline" style="margin-left: 50px"> 
+          <% if (username !== undefined) { %>
+            Logged in As: <%= username %>
+            <form class="form-inline" method="POST" action="/logout">
+              
+              <button type = "submit" >logout</button> 
+              </form>
+          <% } else { %>
+           
+            <div>
+              <form class="form-inline" method="POST" action="/login">
+                
+            <input name = "username">
+            <button type = "submit" >login</button> 
+            </form>
+          </div>
+          <% } %>
+            
+          
+      </div>
+
+       
       </div>
     </div>
   </nav>

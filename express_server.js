@@ -2,8 +2,10 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
+const cookieParser = require("cookie-parser");
 
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 app.set("view engine", "ejs");
 
 const urlDatabase = {
@@ -11,8 +13,22 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const username = req.cookies["username"]
+  const templateVars = { urls: urlDatabase, username: username };
   res.render("urls_index", templateVars);
 });
 
@@ -26,64 +42,94 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
+app.post("/urls", (req,res) => {
+  console.log('req.body',req.body);
+  let shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL; //shortURL-longURL key-value pair saved to urlDatabase
+  console.log(urlDatabase);
+  res.redirect(`/urls/${shortURL}`);
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
+//DELETE a single URL
+app.post("/urls/:shortURL/delete", (req,res) => {
+  const shortURLToDel = req.params.shortURL;
+  delete urlDatabase[shortURLToDel]; // delete the property in urlDatabase obj
+  res.redirect('/urls');
+})
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
 
-
-app.get("/set", (req, res) => {
-  const a = 1;
-  res.send(`a = ${a}`);
- });
- 
- app.get("/fetch", (req, res) => {
-  res.send(`a = ${a}`);
- });
-
- app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
-});
-
-// when the delete button on the urls page is pressed
-app.post("/urls/:shortURL/delete", (req, res) => {
-  const { shortURL } = req.params;
-  const userID = req.session.user_id;
-  if (userID) {
-    delete urlDatabase[shortURL];
-  } else {
-    res.send("Unauthorized request");
-  }
+app.post("/login", (req, res) => {
+  // Get user input 
+  const username = req.body.username
+  // save inside a cookie
+  res.cookie("username", username);
+  //redirect to /url page
   res.redirect("/urls");
+  
+})
+
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+})
+
+//registration page
+app.get("/register", (req, res) => {
+  const username = req.cookies["username"]
+  const templateVars = { urls: urlDatabase, username: username };
+  res.render("urls_register", templateVars);
 });
 
-
-// when the edit buton on the show URL page is pressed
-app.put("/urls/:shortURL/edit", (req, res) => {
-  const userID = req.session.user_id
-  const shortURL = req.params.shortURL;
-  let usersObj = isUsersLink(urlDatabase, userID);
-  //check if shortURL exists for current user:
-  if (usersObj[shortURL]) {
-    urlDatabase[shortURL].longURL = req.body.longURL;
-    res.redirect("/urls");
-  } else {
-    res.render("error", {ErrorStatus: 403, ErrorMessage: "You do not have access to edit this link."});
+//Function to check email
+const checkEmail = (email) => {
+  for(userid in users) {
+    if (users[userid]['email'] === email) {
+      return true;
+    } 
   }
+  return false;
+}
+
+
+//Registering New Users
+app.post("/register", (req,res) => {
+  const { email, password } = req.body;
+
+  if (email === "" || password === "") {
+    return res.status(400).send("An email or password needs to be entered.")
+    
+  };
+  if (checkEmail(email)) {
+    return res.status(400).send("email or password has already been used.")
+  }
+  console.log(users)
+  let userID = generateRandomString();
+  const newUser = {
+    id: userID, 
+    email: req.body.email, 
+    password: req.body.password
+
+  }
+  users[userID] = newUser;
+  // req.session.userID = userID;
+  console.log(users)
+  res.cookie("user_id", userID);
+  res.redirect("/urls");
+
 });
+
+
+
+  
+  
+
+
 
 
 
 function generateRandomString() {
-
+  return Math.random().toString(36).substring(2,8);
 };
 
 generateRandomString();
