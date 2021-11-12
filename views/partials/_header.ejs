@@ -11,8 +11,8 @@
 
         <!--Register/ Login/ Logout-->
         <div class="form-inline" style="margin-left: 50px"> 
-          <% if (username !== undefined) { %>
-            Logged in As: <%= username %>
+          <% if (username) { %>
+            Logged in As: <%= username.email %>
             <form class="form-inline" method="POST" action="/logout">
               
               <button type = "submit" >logout</button> 
