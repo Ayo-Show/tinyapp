@@ -4,5 +4,24 @@ function generateRandomString() {
 };
 
 
+//Function to check email
+function getUserByEmail(email, database) {
+  for(const userid in database) {
+    if (database[userid].email === email) {
+      return database[userid];
+    } 
+  }
+  return false;
+};
 
-module.exports = generateRandomString;
+function urlsForUser(id, database) {
+  const userUrls = {};
+  for (const url in database) {
+    if (database[url].userID === id) {
+      userUrls[url] = database[url];
+    }
+  }
+  return userUrls;
+};
+
+module.exports = { generateRandomString, getUserByEmail, urlsForUser }
